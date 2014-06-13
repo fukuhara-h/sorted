@@ -33,7 +33,7 @@ module Sorted
         @order_keys.select do |order|
           @sort_keys.include?(order)
         end.each do |order|
-          @array << [order, @sorts.assoc(order).last]
+          @array << [order, "asc"]
         end
       end
       @sort_keys.select do |sort|
