@@ -15,11 +15,10 @@ module Sorted
         end
 
         def css
-          if @parser.sorts.flatten.include? @parser.orders[0][0]
-            "sorted #{@parser.sorts.assoc(@parser.orders[0][0]).last}"
-          else
-            "sorted"
-          end
+          classes = ["sorted"]
+          classes << "sorted-primary" if @parser.sorts.first.try(:first) == @parser.orders[0][0]
+          classes << @parser.sorts.assoc(@parser.orders[0][0]).last.to_s if @parser.sorts.flatten.include? @parser.orders[0][0]
+          classes.join(' ').strip
         end
       end
 
