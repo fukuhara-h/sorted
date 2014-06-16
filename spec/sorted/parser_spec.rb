@@ -134,10 +134,23 @@ describe Sorted::Parser, "return types" do
   end
 end
 
-describe Sorted::Parser, "private methods" do
+describe Sorted::Parser, "initialize_whitelist" do
   it "should generate a whitelist from models and strings" do
     sourcelist = ["name", "group.email", Struct.new(:table_name, :column_names).new("faketable", ["field1", "field2"])]
-    result = ["name", "group.email", "faketable.field1", "faketable.field2"]
+    result = ["name", "group.email", "faketable.field1", "field1", "faketable.field2", "field2"]
+
+    expect(Sorted::Parser.send(:initialize_whitelist, sourcelist)).to eq result
+  end
+
+  it "should generate a whitelist with table names if fields are ambiguous" do
+    sourcelist =
+      ["name", "group.email", # Actually the "name" should not be specified; it's ambiguous anyway
+       Struct.new(:table_name, :column_names).new("faketable", ["name", "field1", "field2"]),
+       Struct.new(:table_name, :column_names).new("faketable2", ["email", "field1", "otherfield"]) ]
+    result =
+      ["name", "group.email",
+       "faketable.name", "faketable.field1", "faketable.field2", "field2",
+       "faketable2.email", "faketable2.field1", "faketable2.otherfield", "otherfield"]
 
     expect(Sorted::Parser.send(:initialize_whitelist, sourcelist)).to eq result
   end

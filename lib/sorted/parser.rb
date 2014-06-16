@@ -12,6 +12,7 @@ module Sorted
     # Regex to make sure we only get valid names and not injected code.
     SORTED_QUERY_REGEX  = /([a-zA-Z0-9._]+)_(asc|desc)$/
     SQL_REGEX           = /(([a-z0-9._]+)\s([asc|desc]+)|[a-z0-9._]+)/i
+    FIELD_REGEX         = /^(([a-z0-9_]+)\.([a-z0-9_]+)|[a-z0-9_]+)$/i
 
     def initialize(sort, order = nil, whitelist = [])
       @sort      = sort
@@ -75,16 +76,30 @@ module Sorted
           arg.to_ary || [arg]
         else
           [arg]
-        end
+        end.flatten
 
-      list.flatten.map do |item|
+      fields =
+        list.map do |item|
+          case
+          when item.is_a?(String)
+            if m = item.match(FIELD_REGEX)
+              [m[3].nil? ? m[1] : m[3]]
+            end
+          when %i(table_name column_names).all? { |m| item.respond_to? m }
+            item.column_names
+          end
+        end.flatten.compact.group_by { |_| _ }.select { |_, v| v.length > 1 }.keys
+
+      list.map do |item|
         case
         when item.is_a?(String)
           [item]
         when %i(table_name column_names).all? { |m| item.respond_to? m }
-          item.column_names.map { |c| "#{item.table_name}.#{c}" }
+          item.column_names.map do |c|
+            ["#{item.table_name}.#{c}", unless fields.include?(c) then c end]
+          end
         end
-      end.compact.flatten(1)
+      end.flatten.compact
     end
 
     def apply_whitelist(arr)
