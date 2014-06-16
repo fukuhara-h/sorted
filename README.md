@@ -26,11 +26,13 @@ gem 'sorted', '~> 0.4.3'
 
 ### Model
 
-Using the `sorted` method with the optional default order argument:
+Using the `sorted` method with the optional default order argument. The third argument is column names that the `ORDER BY` clause can use.
 
 ```ruby
-@users = User.sorted(params[:sort], "email ASC").page(params[:page])
+@users = User.sorted(params[:sort], "email ASC", ["email", "name"]).page(params[:page])
 ```
+
+You can also specify ActiveRecord models to the third argument. All columns of the models will be added to the whitelist. In order to get column names it will use `table_name` and `column_names` methods.
 
 ### Rubies
 
