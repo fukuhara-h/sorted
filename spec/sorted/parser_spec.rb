@@ -10,7 +10,7 @@ describe Sorted::Parser, "params parsing" do
     order  = "email ASC, phone ASC, name DESC"
     result = [["email", "asc"], ["phone", "asc"], ["name", "desc"]]
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.orders.should eq result
   end
 
@@ -19,7 +19,7 @@ describe Sorted::Parser, "params parsing" do
     order  = nil
     result = [["email", "desc"], ["name", "desc"]]
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.sorts.should eq result
   end
 
@@ -28,7 +28,7 @@ describe Sorted::Parser, "params parsing" do
     order  = "email ASC, phone ASC, name DESC"
     result = [["email", "desc"], ["name", "desc"], ["phone", "asc"]]
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.to_a.should eq result
   end
 
@@ -37,7 +37,7 @@ describe Sorted::Parser, "params parsing" do
     order  = nil
     result = [["assessmentsTable.name", "desc"], ["users_300.name_5", "desc"]]
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.sorts.should eq result
   end
 
@@ -46,7 +46,7 @@ describe Sorted::Parser, "params parsing" do
     order  = "assessmentsTable.name ASC, users_300.name_5 ASC"
     result = [["assessmentsTable.name", "asc"], ["users_300.name_5", "asc"]]
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.orders.should eq result
   end
 
@@ -55,7 +55,7 @@ describe Sorted::Parser, "params parsing" do
     order  = :email
     result = [["email", "asc"]]
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.orders.should eq result
   end
 end
@@ -75,7 +75,7 @@ describe Sorted::Parser, "return types" do
     order = "users.name DESC"
     result = "`users`.`name` DESC"
 
-    sorter = Sorted::Parser.new(nil, order)
+    sorter = Sorted::Parser.new(nil, order, nil)
     sorter.to_sql(quoter).should eq result
   end
 
@@ -84,7 +84,7 @@ describe Sorted::Parser, "return types" do
     order  = "email ASC, phone ASC, name DESC"
     result = "`email` DESC, `name` DESC, `phone` ASC"
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.to_sql(quoter).should eq result
   end
 
@@ -93,7 +93,7 @@ describe Sorted::Parser, "return types" do
     order  = "email ASC, phone ASC, name DESC"
     result = {"email" => "desc", "name" => "desc", "phone" => "asc"}
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.to_hash.should eq result
   end
 
@@ -102,7 +102,7 @@ describe Sorted::Parser, "return types" do
     order  = "email ASC, phone ASC, name DESC"
     result = "email_desc!name_desc!phone_asc"
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.to_s.should eq result
   end
 
@@ -111,7 +111,7 @@ describe Sorted::Parser, "return types" do
     order  = "email ASC, phone ASC, name DESC"
     result = "`email` ASC, `phone` ASC, `name` DESC"
 
-    sorter = Sorted::Parser.new(sort, order)
+    sorter = Sorted::Parser.new(sort, order, nil)
     sorter.to_sql(quoter).should eq result
   end
 end

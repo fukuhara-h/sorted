@@ -13,11 +13,12 @@ module Sorted
     SORTED_QUERY_REGEX  = /([a-zA-Z0-9._]+)_(asc|desc)$/
     SQL_REGEX           = /(([a-z0-9._]+)\s([asc|desc]+)|[a-z0-9._]+)/i
 
-    def initialize(sort, order = nil)
-      @sort   = sort
-      @order  = order
-      @sorts  = parse_sort
-      @orders = parse_order
+    def initialize(sort, order = nil, whitelist = [])
+      @sort      = sort
+      @order     = order
+      @sorts     = parse_sort
+      @orders    = parse_order
+      @whitelist = Parser::initialize_whitelist whitelist
     end
 
     def parse_sort
@@ -56,7 +57,7 @@ module Sorted
     end
 
     def toggle
-      @array = Toggler.new(sorts, orders).to_a
+      @array = apply_whitelist Toggler.new(sorts, orders).to_a
       self
     end
 
@@ -67,6 +68,32 @@ module Sorted
 
     private
 
+    def self.initialize_whitelist(arg)
+      return nil if arg.nil?
+      list =
+        if arg.respond_to?(:to_ary)
+          arg.to_ary || [arg]
+        else
+          [arg]
+        end
+
+      list.flatten.map do |item|
+        case
+        when item.is_a?(String)
+          [item]
+        when %i(table_name column_names).all? { |m| item.respond_to? m }
+          item.column_names.map { |c| "#{item.table_name}.#{c}" }
+        end
+      end.compact.flatten(1)
+    end
+
+    def apply_whitelist(arr)
+      return arr if @whitelist.nil?
+      arr.select do |field, dir|
+        @whitelist.include?(field) && ["asc", "desc"].include?(dir)
+      end
+    end
+
     def array
       @array ||= default
     end
@@ -76,7 +103,7 @@ module Sorted
       orders.each do |o|
         sorts_new << o unless sorts_new.flatten.include?(o[0])
       end
-      sorts_new
+      apply_whitelist sorts_new
     end
   end
 end

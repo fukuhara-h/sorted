@@ -10,7 +10,7 @@ module Sorted
         def initialize(order, params = {})
           sort = params.delete :sort
           @params = params
-          @parser = ::Sorted::Parser.new(sort, order).toggle
+          @parser = ::Sorted::Parser.new(sort, order, nil).toggle
           @params[:sort] = @parser.to_s
         end
 
