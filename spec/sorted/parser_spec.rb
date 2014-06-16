@@ -76,6 +76,17 @@ describe Sorted::Parser, "params parsing" do
     sorter = Sorted::Parser.new(sort, order, ["user.name", "group.email", "phone"])
     sorter.to_a.should eq result
   end
+
+  it "should call the logger if any field filtered by a whitelist" do
+    logged = []
+    logger = -> (msg) { logged << msg }
+    sort   = "group.email_desc!name_desc"
+    order  = "group.email ASC, address.phone ASC, user.name DESC"
+    result = ["sorted: `name desc` cannot be used.", "sorted: `address.phone asc` cannot be used."]
+
+    _sql = Sorted::Parser.new(sort, order, ["user.name", "group.email", "phone"], logger).to_sql
+    logged.should eq result
+  end
 end
 
 describe Sorted::Parser, "return types" do

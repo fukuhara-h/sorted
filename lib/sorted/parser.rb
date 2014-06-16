@@ -14,11 +14,12 @@ module Sorted
     SQL_REGEX           = /(([a-z0-9._]+)\s([asc|desc]+)|[a-z0-9._]+)/i
     FIELD_REGEX         = /^(([a-z0-9_]+)\.([a-z0-9_]+)|[a-z0-9_]+)$/i
 
-    def initialize(sort, order = nil, whitelist = [])
+    def initialize(sort, order = nil, whitelist = [], logger = -> (_) { })
       @sort      = sort
       @order     = order
       @sorts     = parse_sort
       @orders    = parse_order
+      @logger    = logger
       @whitelist = Parser::initialize_whitelist whitelist
     end
 
@@ -105,7 +106,9 @@ module Sorted
     def apply_whitelist(arr)
       return arr if @whitelist.nil?
       arr.select do |field, dir|
-        @whitelist.include?(field) && ["asc", "desc"].include?(dir)
+        passed = @whitelist.include?(field) && ["asc", "desc"].include?(dir)
+        @logger.call("sorted: `#{field} #{dir}` cannot be used.") unless passed
+        passed
       end
     end
 

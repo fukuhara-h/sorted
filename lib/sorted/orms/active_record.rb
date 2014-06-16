@@ -8,7 +8,7 @@ module Sorted
 
       included do
         def self.sorted(sort, default_order = nil, whitelist = [])
-          sorter = ::Sorted::Parser.new(sort, default_order, whitelist)
+          sorter = ::Sorted::Parser.new(sort, default_order, whitelist, -> (msg) { logger.debug msg })
           quoter = ->(frag) { connection.quote_column_name(frag) }
           order sorter.to_sql(quoter)
         end
