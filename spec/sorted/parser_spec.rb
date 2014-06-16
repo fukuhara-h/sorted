@@ -58,6 +58,24 @@ describe Sorted::Parser, "params parsing" do
     sorter = Sorted::Parser.new(sort, order, nil)
     sorter.orders.should eq result
   end
+
+  it "should filtered by a whitelist" do
+    sort   = "email_desc!name_desc"
+    order  = "email ASC, phone ASC, name DESC"
+    result = [["email", "desc"], ["name", "desc"]]
+
+    sorter = Sorted::Parser.new(sort, order, ["name", "email"])
+    sorter.to_a.should eq result
+  end
+
+  it "should filtered by a whitelist even if they have table names" do
+    sort   = "group.email_desc!name_desc"
+    order  = "group.email ASC, address.phone ASC, user.name DESC"
+    result = [["group.email", "desc"], ["user.name", "desc"]]
+
+    sorter = Sorted::Parser.new(sort, order, ["user.name", "group.email", "phone"])
+    sorter.to_a.should eq result
+  end
 end
 
 describe Sorted::Parser, "return types" do
@@ -113,5 +131,14 @@ describe Sorted::Parser, "return types" do
 
     sorter = Sorted::Parser.new(sort, order, nil)
     sorter.to_sql(quoter).should eq result
+  end
+end
+
+describe Sorted::Parser, "private methods" do
+  it "should generate a whitelist from models and strings" do
+    sourcelist = ["name", "group.email", Struct.new(:table_name, :column_names).new("faketable", ["field1", "field2"])]
+    result = ["name", "group.email", "faketable.field1", "faketable.field2"]
+
+    expect(Sorted::Parser.send(:initialize_whitelist, sourcelist)).to eq result
   end
 end
