@@ -26,10 +26,10 @@ describe Sorted::ViewHelpers::ActionView::SortedViewHelper do
     sorter.css.should eq result
   end
 
-  it "should only return the sorted css class if email has not yet been sorted" do
+  it "should return the sorted and sorted-primary css class if email has been sorted just now" do
     order  = :email
     params = { :sort => "email_asc" }
-    result = "sorted asc"
+    result = "sorted sorted-primary asc"
 
     sorter = Sorted::ViewHelpers::ActionView::SortedViewHelper.new order, params
     sorter.css.should eq result
