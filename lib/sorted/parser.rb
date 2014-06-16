@@ -107,7 +107,7 @@ module Sorted
       return arr if @whitelist.nil?
       arr.select do |field, dir|
         passed = @whitelist.include?(field) && ["asc", "desc"].include?(dir)
-        @logger.call("sorted: `#{field} #{dir}` cannot be used.") unless passed
+        @logger.call("Unpermitted sort field: #{field} #{dir}") unless passed
         passed
       end
     end

@@ -82,7 +82,7 @@ describe Sorted::Parser, "params parsing" do
     logger = -> (msg) { logged << msg }
     sort   = "group.email_desc!name_desc"
     order  = "group.email ASC, address.phone ASC, user.name DESC"
-    result = ["sorted: `name desc` cannot be used.", "sorted: `address.phone asc` cannot be used."]
+    result = ["Unpermitted sort field: name desc", "Unpermitted sort field: address.phone asc"]
 
     _sql = Sorted::Parser.new(sort, order, ["user.name", "group.email", "phone"], logger).to_sql
     logged.should eq result
