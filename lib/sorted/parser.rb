@@ -34,24 +34,24 @@ module Sorted
     def parse_order
       order.to_s.split(/,/).map do |order_string|
         if m = order_string.match(SQL_REGEX)
-          [(m[2].nil? ? m[1] : m[2]),(m[3].nil? ? "asc" : m[3].downcase)]
+          [m[2].nil? ? m[1] : m[2], m[3].nil? ? "asc" : m[3].downcase]
         end
       end.compact
     end
 
     def to_hash
-      array.inject({}){|h,a| h.merge(Hash[a[0],a[1]])}
+      array.inject({}) { |a, (k, v)| a.merge(k => v) }
     end
 
     def to_sql(quoter = ->(frag) { frag })
-      array.map do |a|
-        column = a[0].split('.').map{ |frag| quoter.call(frag) }.join('.')
-        "#{column} #{a[1].upcase}"
+      array.map do |field, dir|
+        column = field.split('.').map(&quoter).join('.')
+        "#{column} #{dir.upcase}"
       end.join(', ')
     end
 
     def to_s
-      array.map{|a| a.join('_') }.join('!')
+      array.map { |a| a.join('_') }.join('!')
     end
 
     def to_a
@@ -84,18 +84,18 @@ module Sorted
           case
           when item.is_a?(String)
             if m = item.match(FIELD_REGEX)
-              [m[3].nil? ? m[1] : m[3]]
+              m[3].nil? ? m[1] : m[3]
             end
-          when %i(table_name column_names).all? { |m| item.respond_to? m }
+          when %i(table_name column_names).all?(&item.method(:respond_to?))
             item.column_names
           end
-        end.flatten.compact.group_by { |_| _ }.select { |_, v| v.length > 1 }.keys
+        end.flatten.compact.group_by { |_| _ }.select { |_, v| 1 < v.length }.keys
 
       list.map do |item|
         case
         when item.is_a?(String)
           [item]
-        when %i(table_name column_names).all? { |m| item.respond_to? m }
+        when %i(table_name column_names).all?(&item.method(:respond_to?))
           item.column_names.map do |c|
             ["#{item.table_name}.#{c}", unless fields.include?(c) then c end]
           end
