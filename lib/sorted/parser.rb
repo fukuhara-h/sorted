@@ -14,13 +14,14 @@ module Sorted
     SQL_REGEX           = /(([a-z0-9._]+)\s([asc|desc]+)|[a-z0-9._]+)/i
     FIELD_REGEX         = /^(([a-z0-9_]+)\.([a-z0-9_]+)|[a-z0-9_]+)$/i
 
-    def initialize(sort, order = nil, whitelist = [], logger = -> (_) { })
-      @sort      = sort
-      @order     = order
-      @sorts     = parse_sort
-      @orders    = parse_order
-      @logger    = logger
-      @whitelist = Parser::initialize_whitelist whitelist
+    def initialize(sort, order = nil, whitelist = [], customlist = {}, logger = -> (_) { })
+      @sort       = sort
+      @order      = order
+      @sorts      = parse_sort
+      @orders     = parse_order
+      @logger     = logger
+      @customlist = customlist
+      @whitelist  = Parser::initialize_whitelist whitelist
     end
 
     def parse_sort
@@ -45,6 +46,7 @@ module Sorted
 
     def to_sql(quoter = ->(frag) { frag })
       array.map do |field, dir|
+        next @customlist["#{field} #{dir}"] if @customlist["#{field} #{dir}"]
         column = field.split('.').map(&quoter).join('.')
         "#{column} #{dir.upcase}"
       end.join(', ')

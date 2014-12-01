@@ -84,8 +84,18 @@ describe Sorted::Parser, "params parsing" do
     order  = "group.email ASC, address.phone ASC, user.name DESC"
     result = ["Unpermitted sort field: name desc", "Unpermitted sort field: address.phone asc"]
 
-    _sql = Sorted::Parser.new(sort, order, ["user.name", "group.email", "phone"], logger).to_sql
+    _sql = Sorted::Parser.new(sort, order, ["user.name", "group.email", "phone"], {}, logger).to_sql
     logged.should eq result
+  end
+
+  it "should create a customized SQL if a customlist is given" do
+    sort   = "group.email_asc!name_desc"
+    order  = "group.email DESC, address.phone ASC, user.name DESC"
+    custom = { "group.email asc" => "group.email IS NOT NULL ASC, group.email ASC" }
+    result = "group.email IS NOT NULL ASC, group.email ASC, name DESC, address.phone ASC, user.name DESC"
+
+    sorter = Sorted::Parser.new(sort, order, nil, custom)
+    sorter.to_sql.should eq result
   end
 end
 
